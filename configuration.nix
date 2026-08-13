@@ -100,6 +100,17 @@
     git
   ];
 
+  sops.defaultSopsFile = ./secrets/secrets.yaml;
+  sops.age.keyFile = "/var/lib/sops-nix/key.txt";
+
+  users.mutableUsers = false;
+
+  sops.secrets.root_password_hashed.neededForUsers = true;
+  users.users.root.hashedPasswordFile = config.sops.secrets.root_password_hashed.path;
+
+  sops.secrets.user_password_hashed.neededForUsers = true;
+  users.users.user.hashedPasswordFile = config.sops.secrets.user_password_hashed.path;
+
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
