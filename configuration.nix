@@ -4,6 +4,9 @@
 
 { config, lib, pkgs, ... }:
 
+let
+  main_domain = "efthimiskritikos.com";
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -98,6 +101,7 @@
     wget
     htop
     git
+    openssl
   ];
 
   sops.defaultSopsFile = ./secrets/secrets.yaml;
@@ -110,6 +114,31 @@
 
   sops.secrets.user_password_hashed.neededForUsers = true;
   users.users.user.hashedPasswordFile = config.sops.secrets.user_password_hashed.path;
+
+  sops.secrets.lets_encrypt_email.neededForUsers = true;
+  security.acme = {
+    acceptTerms = true;
+    defaults.email = "{config.sops.secrets.lets_encrypt_email}";
+    certs = {
+      "${main_domain}" = {
+        group = config.services.nginx.group;
+        extraDomainNames = [
+        ];
+      };
+    };
+    defaults.webroot = "/var/lib/acme/acme-challenge/";
+  };
+
+  networking.firewall.allowedTCPPorts = [ 80 ];
+
+  services.nginx = {
+    enable = true;
+    virtualHosts.${main_domain} = {
+      forceSSL = true;
+      useACMEHost = main_domain;
+      locations."/.well-known/".root = "/var/lib/acme/acme-challenge/";
+    };
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
