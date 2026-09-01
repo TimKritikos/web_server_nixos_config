@@ -5,26 +5,27 @@
 
 {
   imports =
-    [ (modulesPath + "/profiles/qemu-guest.nix")
+    [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "ata_piix" "floppy" "sd_mod" "sr_mod" ];
+  boot.initrd.availableKernelModules = [ "ehci_pci" "ahci" "firewire_ohci" "xhci_pci" "sd_mod" "sr_mod" "sdhci_pci" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ ];
+  boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
+  boot.zfs.requestEncryptionCredentials = [];
 
   fileSystems."/" =
     { device = "rpool/local/root";
       fsType = "zfs";
     };
 
-  fileSystems."/home" =
-    { device = "rpool/local/home";
+  fileSystems."/nix" =
+    { device = "rpool/local/nix";
       fsType = "zfs";
     };
 
-  fileSystems."/nix" =
-    { device = "rpool/local/nix";
+  fileSystems."/home" =
+    { device = "rpool/local/home";
       fsType = "zfs";
     };
 
@@ -34,7 +35,26 @@
       options = [ "fmask=0022" "dmask=0022" ];
     };
 
+  systemd.services.zfs-load-key-acme = {
+	  description = "Load ZFS encryption key for the encrypted datasets";
+	  after = [ "zfs-import.target" ];
+	  before = [ "var-lib-acme.mount" ];
+	  requiredBy = [ "var-lib-acme.mount" ];
+	  unitConfig.DefaultDependencies = false;
+	  serviceConfig = {
+		  Type = "oneshot";
+		  RemainAfterExit = true;
+		  ExecStart = "${pkgs.zfs}/bin/zfs load-key rpool/internet_server_data";
+	  };
+  };
+  fileSystems."/var/lib/acme" =
+    { device = "rpool/internet_server_data/tls_keys";
+      fsType = "zfs";
+      options = [ "nofail" ];
+    };
+
   swapDevices = [ ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

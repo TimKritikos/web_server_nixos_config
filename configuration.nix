@@ -101,7 +101,6 @@ in
     wget
     htop
     git
-    openssl
   ];
 
   sops.defaultSopsFile = ./secrets/secrets.yaml;
