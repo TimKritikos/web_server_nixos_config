@@ -103,6 +103,12 @@ in
     git
   ];
 
+  services.mysql = {
+    enable = true;
+    package = pkgs.mariadb_1011;
+    dataDir = "/var/lib/mysql";
+  };
+
   sops.defaultSopsFile = ./secrets/secrets.yaml;
   sops.age.keyFile = "/var/lib/sops-nix/key.txt";
 
@@ -115,9 +121,10 @@ in
   users.users.user.hashedPasswordFile = config.sops.secrets.user_password_hashed.path;
 
   sops.secrets.lets_encrypt_email.neededForUsers = true;
+
   security.acme = {
     acceptTerms = true;
-    defaults.email = "{config.sops.secrets.lets_encrypt_email}";
+    defaults.email = "lets-encrypt-491@mail.efthimiskritikos.com";
     certs = {
       "${main_domain}" = {
         group = config.services.nginx.group;
@@ -128,7 +135,12 @@ in
     defaults.webroot = "/var/lib/acme/acme-challenge/";
   };
 
-  networking.firewall.allowedTCPPorts = [ 80 ];
+  services.nginx.virtualHosts."cloud.efthimiskritikos.com" = {
+    forceSSL = true;
+    enableACME = true;
+  };
+
+  networking.firewall.allowedTCPPorts = [ 80 443 ];
 
   services.nginx = {
     enable = true;
@@ -136,6 +148,26 @@ in
       forceSSL = true;
       useACMEHost = main_domain;
       locations."/.well-known/".root = "/var/lib/acme/acme-challenge/";
+    };
+  };
+
+  services.nextcloud = {
+    enable = true;
+    package = pkgs.nextcloud32;
+    hostName = "cloud.efthimiskritikos.com";
+    https = true;
+    datadir = "/var/lib/nextcloud";   # data itself lives in ${datadir}/data
+    configureRedis = true;
+    maxUploadSize = "80G";
+    database.createLocally = true;
+    config = {
+      dbtype = "mysql";
+      adminpassFile = "/etc/nextcloud-admin-pass";
+    };
+    settings = {
+      trusted_domains = [ "cloud.efthimiskritikos.com" ];
+      default_phone_region = "GB";
+      maintenance_window_start = 1;   # UTC hour for background jobs
     };
   };
 

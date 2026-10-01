@@ -35,6 +35,19 @@
       options = [ "fmask=0022" "dmask=0022" ];
     };
 
+  systemd.services.zfs-load-key-nextcloud = {
+    description = "Load ZFS encryption key for the encrypted datasets";
+    after = [ "zfs-import.target" ];
+    before = [ "var-lib-nextcloud.mount" ];
+    requiredBy = [ "var-lib-nextcloud.mount" ];
+    unitConfig.DefaultDependencies = false;
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.zfs}/bin/zfs load-key rpool/internet_server_data/nextcloud";
+    };
+  };
+
   systemd.services.zfs-load-key-acme = {
 	  description = "Load ZFS encryption key for the encrypted datasets";
 	  after = [ "zfs-import.target" ];
