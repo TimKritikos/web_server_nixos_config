@@ -152,8 +152,11 @@ in
   };
 
   services.nextcloud = {
+    phpOptions = {
+      "opcache.interned_strings_buffer" = "32";
+    };
     enable = true;
-    package = pkgs.nextcloud32;
+    package = pkgs.nextcloud34;
     hostName = "cloud.efthimiskritikos.com";
     https = true;
     datadir = "/var/lib/nextcloud";   # data itself lives in ${datadir}/data
@@ -168,6 +171,7 @@ in
       trusted_domains = [ "cloud.efthimiskritikos.com" ];
       default_phone_region = "GB";
       maintenance_window_start = 1;   # UTC hour for background jobs
+      "overwrite.cli.url" = "https://cloud.efthimiskritikos.com/";
     };
   };
 
