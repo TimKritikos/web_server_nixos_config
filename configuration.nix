@@ -105,7 +105,7 @@ in
 
   services.mysql = {
     enable = true;
-    package = pkgs.mariadb_1011;
+    package = pkgs.mariadb_114;
     dataDir = "/var/lib/mysql";
   };
 
