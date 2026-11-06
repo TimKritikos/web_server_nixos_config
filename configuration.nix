@@ -55,8 +55,8 @@ in
     domains = [ "@" ];
     zone = main_domain ;
     ssl = true;
-    verbose = true;
     usev4 = "webv4, webv4=ipify-ipv4";
+    usev6 = "disabled";
   };
 
 
