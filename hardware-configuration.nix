@@ -13,6 +13,7 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
   boot.zfs.requestEncryptionCredentials = [];
+  boot.zfs.forceImportRoot = true;
 
   fileSystems."/" =
     { device = "rpool/local/root";
