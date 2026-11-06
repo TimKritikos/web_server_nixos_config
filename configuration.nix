@@ -139,8 +139,6 @@ in
   sops.secrets.user_password_hashed.neededForUsers = true;
   users.users.user.hashedPasswordFile = config.sops.secrets.user_password_hashed.path;
 
-  sops.secrets.lets_encrypt_email.neededForUsers = true;
-
   security.acme = {
     acceptTerms = true;
     defaults.email = "lets-encrypt-491@mail.efthimiskritikos.com";
