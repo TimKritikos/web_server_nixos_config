@@ -42,6 +42,24 @@ in
     nameservers = [ "1.1.1.1" "8.8.8.8" ];
   };
 
+
+
+  sops.secrets.namecheap_password.neededForUsers = true;
+  services.ddclient = {
+    enable = true;
+    interval = "5min";
+    protocol = "namecheap";
+    server = "dynamicdns.park-your-domain.com";
+    username = main_domain;
+    passwordFile = config.sops.secrets.namecheap_password.path;
+    domains = [ "@" ];
+    zone = main_domain ;
+    ssl = true;
+    verbose = true;
+    usev4 = "webv4, webv4=ipify-ipv4";
+  };
+
+
   # Set your time zone.
   time.timeZone = "Iceland";
 
