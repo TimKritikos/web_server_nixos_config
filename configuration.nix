@@ -119,6 +119,7 @@ in
     wget
     htop
     git
+    sops
   ];
 
   services.mysql = {
